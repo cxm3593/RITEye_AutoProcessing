@@ -2,6 +2,9 @@ import bpy
 
 eye_filepath = "//Eye.blend"
 
+def vector_subtract(a,b):
+    c = [a[0]-b[0], a[1]-b[1], a[2]-b[2]]
+    return c
 
 def ImportHeadModel():
     # file paths
@@ -17,24 +20,38 @@ def ImportHeadModel():
     bpy.ops.object.shade_smooth()
     
 def moveHead():
-    
-    # manual data
-    head_scale = [0.96, 0.96, 0.96]
-    head_shift = [-2.7746, 9.4176, -29.008]
-
     # select the head model
     head=bpy.data.objects["Head"]
+    
+    # model data
+    verts = head.data.vertices
+    head_shift = [0,0,0]
+    
+    upper_lid = verts[1125].co
+    lower_lid = verts[1160].co
+    inner_corner = verts[6094].co
+    outer_corner = verts[6042].co
+    
+    delta_lid = vector_subtract(upper_lid, lower_lid)
+    delta_corner = vector_subtract(outer_corner, inner_corner)
+    
+    print(delta_lid)
+    print(delta_corner)
 
-    # move and scale the model so the eye is in place
-    for i in range(3):
-        head.location[i] = head_shift[i]/100
-        head.scale[i] = head_scale[i]
-        
+    head_shift[0] = inner_corner[0]+delta_corner[0]/2
+    # y is up in these vetrex positions
+    head_shift[2] = lower_lid[1]+delta_lid[1]/2 
+    head_shift[1] = lower_lid[2]-math.sqrt(.012**2-(delta_lid[1]/2)**2)
+
+    head.location[0] = head_shift[0]*-1
+    head.location[1] = head_shift[1]
+    head.location[2] = head_shift[2]*-1
+
     # appliest the transform 
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     
 def cleanEye():
-    # Arbitrarily sized 1 cm hole so you can see the retina
+    # 1 cm hole for the skull's orbit
     eyeball_radius = 0.01
 
     head=bpy.data.objects["Head"]
