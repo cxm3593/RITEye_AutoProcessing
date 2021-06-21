@@ -1,6 +1,15 @@
 import bpy
+import json
+import math
 
 eye_filepath = "//Eye.blend"
+parameters_json = {}
+
+def initParameters():
+    with open("AutoScriptParameters.json") as p_json:
+        parameters_str = p_json.read()
+    parameters_json = json.loads(parameters_str)
+    return parameters_json
 
 def vector_subtract(a,b):
     c = [a[0]-b[0], a[1]-b[1], a[2]-b[2]]
@@ -27,10 +36,10 @@ def moveHead():
     verts = head.data.vertices
     head_shift = [0,0,0]
     
-    upper_lid = verts[1125].co
-    lower_lid = verts[1160].co
-    inner_corner = verts[6094].co
-    outer_corner = verts[6042].co
+    upper_lid = verts[parameters_json["upper_lid"]].co
+    lower_lid = verts[parameters_json["lower_lid"]].co
+    inner_corner = verts[parameters_json["inner_corner"]].co
+    outer_corner = verts[parameters_json["outer_corner"]].co
     
     delta_lid = vector_subtract(upper_lid, lower_lid)
     delta_corner = vector_subtract(outer_corner, inner_corner)
@@ -166,6 +175,9 @@ def AddWarp():
     WARP_mod.strength = 0.40 # put them into Json
     WARP_mod.falloff_radius = 0.009
     WARP_mod.falloff_type = "CURVE"
+
+# Init
+parameters_json = initParameters()
 
 # Entry
 ImportHeadModel()
