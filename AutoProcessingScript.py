@@ -162,19 +162,78 @@ def lashesAndPlica():
     ImportBlenderFile(blender_path)
     parent()
     
+def placeLashes():
+    # gets the lashes
+    head = bpy.data.objects["Head"]
+    upper = bpy.data.objects["upper"]
+    lower = bpy.data.objects["lower"]
+    
+    # appliest the transform 
+    upper.select_set(True)
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    lower.select_set(True)
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+
+    # wraps the lashes around the model
+    upperEdges = [ 27, 18, 4, 3, 0, 2, 42, 14, 13, 11, 12, 17, 16, 15, 5, 43 ]
+    upperLidVerts = [4737,599,1264,1263,1262,1261,1260,1138,1137,1136,1135,1144,1139,1142,1282,1281]
+    lowerEdges = [ 23, 24, 21, 22, 16, 17, 33, 3, 4, 7, 13, 19, 1 ]
+    lowerLidVerts = [611,609,607,605,602,598,596,594,588,586,584,580,581]    
+    
+    # warps the lashes geometry 
+    placeLash(lower, head, lowerLidVerts, lowerEdges)
+    placeLash(upper, head, upperLidVerts, upperEdges)
+    
+def placeLash(lash, head, lidVerts, edges):
+    # positions the lower lash
+    bpy.context.view_layer.objects.active = lash
+    for i in range(len(edges)):
+        # deselects the other egdes
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.object.mode_set(mode='OBJECT')
+    
+        vert = head.data.vertices[lidVerts[i]].co
+        edge = lash.data.edges[edges[i]]
+        edge.select = True
+        
+        # gets the edges's vertices
+        edgeP1 = lash.data.vertices[edge.vertices[0]]
+        edgeP2 = lash.data.vertices[edge.vertices[1]]
+        
+        midpoint = [ 
+            (edgeP1.co[0] + edgeP2.co[0]) / 2, 
+            (edgeP1.co[1] + edgeP2.co[1]) / 2, 
+            (edgeP1.co[2] + edgeP2.co[2]) / 2
+        ]
+        
+        # moves edge to the point
+        delta = vector_subtract(vert,midpoint)
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.transform.translate(value=(delta[0], delta[1], delta[2]), orient_type='GLOBAL')
+        bpy.ops.object.mode_set(mode='OBJECT')
+
+    
 def AddWarp():
     head = bpy.data.objects["Head"]
+    upper = bpy.data.objects["upper"]
+    lower = bpy.data.objects["lower"]
     head.modifiers.new("Warp_Modifier", 'WARP')
     
     pupil_empty = bpy.data.objects["pupil-empty"]
     cornea_empty = bpy.data.objects["cornea-empty"]
     
-    WARP_mod = head.modifiers["Warp_Modifier"]
-    WARP_mod.object_from = pupil_empty
-    WARP_mod.object_to = cornea_empty
-    WARP_mod.strength = 0.40 # put them into Json
-    WARP_mod.falloff_radius = 0.009
-    WARP_mod.falloff_type = "CURVE"
+    head_mod = head.modifiers["Warp_Modifier"]
+    upper_mod = upper.modifiers["Warp"]
+    lower_mod = lower.modifiers["Warp"]
+    warp_mods = [ head_mod, upper_mod, lower_mod ]
+    
+    for WARP_mod in warp_mods:
+        WARP_mod.object_from = pupil_empty
+        WARP_mod.object_to = cornea_empty
+        WARP_mod.strength = 0.40
+        WARP_mod.falloff_radius = 0.009
+        WARP_mod.falloff_type = "CURVE"
 
 # Init
 parameters_json = initParameters()
@@ -186,5 +245,6 @@ cleanEye()
 fixSkin()
 Importeye()
 lashesAndPlica()
+placeLashes()
 AddWarp()
 
