@@ -15,6 +15,10 @@ def vector_subtract(a,b):
     c = [a[0]-b[0], a[1]-b[1], a[2]-b[2]]
     return c
 
+def vector_scale(a,s):
+    c = [a[0]*s, a[1]*s, a[2]*s]
+    return c
+
 def ImportHeadModel():
     # file paths
     M12_filePath= "//Head Models\M\OBJ\Sub Division\Head.OBJ" # this does not
@@ -213,6 +217,25 @@ def placeLash(lash, head, lidVerts, edges):
         bpy.ops.transform.translate(value=(delta[0], delta[1], delta[2]), orient_type='GLOBAL')
         bpy.ops.object.mode_set(mode='OBJECT')
 
+def placePlica():
+    disp = parameters_json["plicaDisp"]
+    
+    head = bpy.data.objects["Head"]
+    plica = bpy.data.objects["Eye_Plica"]
+    
+    # recenters and applies
+    plica.location = disp
+    plica.select_set(True)
+    bpy.ops.object.transform_apply(location=True, rotation=False, scale=False)
+    
+    guideP1 = head.data.vertices[559].co
+    guideP2 = head.data.vertices[546].co
+    guideAvg = [ (guideP1[0]+guideP2[0])/2, (guideP1[1]+guideP2[1])/2, (guideP1[2]+guideP2[2])/2 ]
+    plica.location = guideAvg
+
+    dist = math.sqrt(plica.location[0]**2+plica.location[1]**2+plica.location[2]**2)
+    plica.location = vector_scale(plica.location, parameters_json["plicaDist"] / dist)
+
     
 def AddWarp():
     head = bpy.data.objects["Head"]
@@ -246,5 +269,6 @@ fixSkin()
 Importeye()
 lashesAndPlica()
 placeLashes()
+placePlica()
 AddWarp()
 
