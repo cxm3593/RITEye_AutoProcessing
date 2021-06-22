@@ -5,6 +5,8 @@ import math
 eye_filepath = "//Eye.blend"
 parameters_json = {}
 
+head_filename = "M"
+
 def initParameters():
     with open("AutoScriptParameters.json") as p_json:
         parameters_str = p_json.read()
@@ -21,7 +23,7 @@ def vector_scale(a,s):
 
 def ImportHeadModel():
     # file paths
-    M12_filePath= "//Head Models\M\OBJ\Sub Division\Head.OBJ" # this does not
+    M12_filePath= "//Head Models\\"+head_filename+"\OBJ\Sub Division\Head.OBJ" # this does not
     M12_filePath_abs = bpy.path.abspath(M12_filePath) # this works
 
     # Import
@@ -90,9 +92,6 @@ def cleanEye():
     bpy.ops.object.mode_set(mode='OBJECT')
     
 def fixSkin():
-    # input
-    headmodel_name = "M"
-
     # gets the head
     head=bpy.data.objects["Head"]
 
@@ -107,7 +106,7 @@ def fixSkin():
     n_node = skin.node_tree.nodes.get('n')      # normal map
 
     # gets the images from the jpg folder
-    jpg_path = "//Head Models\\" + headmodel_name + "\Textures\JPG\\"
+    jpg_path = "//Head Models\\" + head_filename + "\Textures\JPG\\"
     jpg_path = bpy.path.abspath(jpg_path)
 
     # colors
