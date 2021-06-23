@@ -33,6 +33,9 @@ lower_blinker.head = (0.0, 0.0, 0.0)
 lower_blinker.tail = (0.0, -1.21273, -0.68972)
 lower_blinker.parent = head_move
 
+## Scale it down (to fit the general scene)
+Armature_obj.scale = (0.01, 0.01, 0.01)
+
 ## Parenting Objects to Armature
 bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 bpy.ops.object.select_all(action='DESELECT') #deselect all objects
@@ -42,6 +45,11 @@ lower_eyelash.select = True
 Armature_obj.select = True
 bpy.context.view_layer.objects.active = Armature_obj
 bpy.ops.object.parent_set(type='ARMATURE', keep_transform=True)
+
+## Creating vertex groups for the head model
+head.vertex_groups.new(name = "upper_blinker")
+head.vertex_groups.new(name = "lower_blinker")
+head.vertex_groups.new(name = "head_move")
 
 
 ## Calculate vertex weight
@@ -165,7 +173,7 @@ def generateVertexWeight(eyelid_verts, eyelid_apex, vertex_group, head, isUpper)
 ### Auto weight Method 2
 Eyelid_upper_apex_index = 1125 # the index of apex vertex
 Eyelid_upper_apex_vertex = getVertexByIndex(Eyelid_upper_apex_index, head)
-Eyelid_lower_apex_index = 1160
+Eyelid_lower_apex_index = 597
 Eyelid_lower_apex_vertex = getVertexByIndex(Eyelid_lower_apex_index, head)
 
 D_dict = {}
