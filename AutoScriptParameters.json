@@ -8,5 +8,11 @@
     "lowerEdges" : [ 23, 24, 21, 22, 16, 17, 33, 3, 4, 7, 13, 19, 1 ],
     "lowerLidVerts" : [611,609,607,605,602,598,596,594,588,586,584,580,581],
 	"plicaDisp" : [0.010262,0.0070157,0.002787],
-	"plicaDist" : 0.013
+	"plicaDist" : 0.013,
+	"upper_blinker_tail_x" : 0.0,
+	"upper_blinker_tail_y" : -1.33367,
+	"upper_blinker_tail_z" : 0.45673,
+	"lower_blinker_tail_x" : 0.0,
+	"lower_blinker_tail_y" : -1.21273,
+	"lower_blinker_tail_z" : -0.68972
 }
