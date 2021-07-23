@@ -28,10 +28,12 @@ upper_blinker = edit_bones.new('upper_blinker')
 upper_blinker.head = (0.0, 0.0, 0.0)
 upper_blinker.tail = (0.0, -1.33367, 0.45673)
 upper_blinker.parent = head_move
+
 lower_blinker = edit_bones.new('lower_blinker')
 lower_blinker.head = (0.0, 0.0, 0.0)
 lower_blinker.tail = (0.0, -1.21273, -0.68972)
 lower_blinker.parent = head_move
+lower_blinker.roll = 3.14334
 
 ## Scale it down (to fit the general scene)
 Armature_obj.scale = (0.01, 0.01, 0.01)
@@ -39,10 +41,10 @@ Armature_obj.scale = (0.01, 0.01, 0.01)
 ## Parenting Objects to Armature
 bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
 bpy.ops.object.select_all(action='DESELECT') #deselect all objects
-head.select = True
-upper_eyelash.select = True
-lower_eyelash.select = True
-Armature_obj.select = True
+head.select_set(state = True)
+upper_eyelash.select_set(state = True)
+lower_eyelash.select_set(state = True)
+Armature_obj.select_set(state = True)
 bpy.context.view_layer.objects.active = Armature_obj
 bpy.ops.object.parent_set(type='ARMATURE', keep_transform=True)
 

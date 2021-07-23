@@ -5,7 +5,7 @@ import math
 eye_filepath = "//Eye.blend"
 parameters_json = {}
 
-head_filename = "M"
+head_filename = "Model"
 
 def initParameters():
     with open("AutoScriptParameters.json") as p_json:
@@ -131,6 +131,7 @@ def fixSkin():
 def ImportBlenderFile(filepath):
     with bpy.data.libraries.load(filepath, link=False) as (data_from, data_to): # link=False : not to modify the original model
         data_to.objects = data_from.objects
+        data_to.materials = data_from.materials
 
     for obj in data_to.objects:
         if obj is not None or bpy.types.BlendDataWorkSpaces:
@@ -257,17 +258,26 @@ def AddWarp():
         WARP_mod.falloff_radius = 0.009
         WARP_mod.falloff_type = "CURVE"
 
+def SettingSceneMisc():
+	bpy.context.scene.render.resolution_x = 640
+	bpy.context.scene.render.resolution_y = 480
+	bpy.context.scene.camera = bpy.data.objects["Camera"]
+
+
+
+
 # Init
 parameters_json = initParameters()
 
 # Entry
 ImportHeadModel()
+Importeye()
 moveHead()
 cleanEye()
 fixSkin()
-Importeye()
 lashesAndPlica()
 placeLashes()
 placePlica()
 AddWarp()
+SettingSceneMisc()
 
