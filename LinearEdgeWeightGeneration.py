@@ -7,7 +7,7 @@ import json
 import math
 
 ##-##-##- Variables:
-head = bpy.data.objects["Head"]
+head = bpy.data.objects["head"]
 parameters_json = {}
 AutoScriptParameterFileName = "AutoScriptParameters.json"
 UpperEyelidEdgeVertFile = "eyelidEdge_vertices_upper.txt"

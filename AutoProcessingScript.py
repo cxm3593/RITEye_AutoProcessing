@@ -29,14 +29,14 @@ def ImportHeadModel():
     # Import
     bpy.ops.import_scene.obj(filepath=M12_filePath_abs)
     head = bpy.context.selected_objects[0]
-    head.name = "Head"
+    head.name = "head"
 
     # shade smooth
     bpy.ops.object.shade_smooth()
     
 def moveHead():
     # select the head model
-    head=bpy.data.objects["Head"]
+    head=bpy.data.objects["head"]
     
     # model data
     verts = head.data.vertices
@@ -69,7 +69,7 @@ def cleanEye():
     # 1 cm hole for the skull's orbit
     eyeball_radius = 0.01
 
-    head=bpy.data.objects["Head"]
+    head=bpy.data.objects["head"]
     bpy.context.view_layer.objects.active = head
 
     # deselects the verticies of the head
@@ -93,7 +93,7 @@ def cleanEye():
     
 def fixSkin():
     # gets the head
-    head=bpy.data.objects["Head"]
+    head=bpy.data.objects["head"]
 
     # applies the skin material
     skin = bpy.data.materials["skin"]
@@ -138,6 +138,8 @@ def ImportBlenderFile(filepath):
           bpy.context.collection.objects.link(obj)
         
         #rename 
+        if obj.name == "EyeWet.002":
+            continue
         name_array = obj.name.split('.')
         newname = name_array[0]
         if newname == "Eye":                # hack fix
@@ -149,7 +151,7 @@ def Importeye():
           
 def parent():
     # gets the objects
-    head = bpy.data.objects["Head"]
+    head = bpy.data.objects["head"]
     lower = bpy.data.objects["lower"]
     upper = bpy.data.objects["upper"]
     plica = bpy.data.objects["Eye_Plica"]
@@ -168,7 +170,7 @@ def lashesAndPlica():
     
 def placeLashes():
     # gets the lashes
-    head = bpy.data.objects["Head"]
+    head = bpy.data.objects["head"]
     upper = bpy.data.objects["upper"]
     lower = bpy.data.objects["lower"]
     
@@ -220,7 +222,7 @@ def placeLash(lash, head, lidVerts, edges):
 def placePlica():
     disp = parameters_json["plicaDisp"]
     
-    head = bpy.data.objects["Head"]
+    head = bpy.data.objects["head"]
     plica = bpy.data.objects["Eye_Plica"]
     
     # recenters and applies
@@ -238,7 +240,7 @@ def placePlica():
 
     
 def AddWarp():
-    head = bpy.data.objects["Head"]
+    head = bpy.data.objects["head"]
     upper = bpy.data.objects["upper"]
     lower = bpy.data.objects["lower"]
     head.modifiers.new("Warp_Modifier", 'WARP')

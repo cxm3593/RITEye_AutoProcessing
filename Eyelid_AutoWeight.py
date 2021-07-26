@@ -5,7 +5,7 @@ import math
 
 print("####Running Eyelid_AutoWeight.py...")
 ## Initialize some variables
-head = bpy.data.objects["Head"]
+head = bpy.data.objects["head"]
 head_vgroups = head.vertex_groups
 
 upper_eyelash = bpy.data.objects["upper"]
