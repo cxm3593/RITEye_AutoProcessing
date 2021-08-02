@@ -265,6 +265,14 @@ def SettingSceneMisc():
 	bpy.context.scene.render.resolution_y = 480
 	bpy.context.scene.camera = bpy.data.objects["Camera"]
 
+def SettingDOF():
+	camera = bpy.data.objects["Camera"]
+	camera.data.dof.use_dof = True
+	camera.data.dof.focus_object = bpy.data.objects["Eye.Wetness"]
+	camera.data.dof.aperture_fstop = 0.5
+	camera.data.dof.aperture_blades = 8
+
+
 
 
 
@@ -282,4 +290,5 @@ placeLashes()
 placePlica()
 AddWarp()
 SettingSceneMisc()
+SettingDOF()
 

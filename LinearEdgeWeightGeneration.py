@@ -232,13 +232,13 @@ bpy.data.objects["lower"].modifiers["Armature"].object = bpy.data.objects["Armat
 
 ##- Scale Fix
 #bpy.ops.object.select_all(action='SELECT')
-#bpy.context.scene.tool_settings.transform_pivot_point = 'INDIVIDUAL_ORIGINS'
-#bpy.ops.transform.resize(value=(100, 100, 100), orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', mirror=True, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False)
-
-# for o in bpy.data.objects:
-#     bpy.ops.object.select_all(action='DESELECT')
-#     o.select_set(True)
-#     bpy.ops.transform.resize(value=(10, 10, 10))
+bpy.context.scene.tool_settings.transform_pivot_point = 'INDIVIDUAL_ORIGINS'
+# bpy.ops.transform.resize(value=(10, 10, 10), orient_type='GLOBAL', orient_matrix=((1, 0, 0), (0, 1, 0), (0, 0, 1)), orient_matrix_type='GLOBAL', mirror=True, use_proportional_edit=False, proportional_edit_falloff='SMOOTH', proportional_size=1, use_proportional_connected=False, use_proportional_projected=False)
+bpy.data.objects["Armature"].scale = bpy.data.objects["Armature"].scale * 100
+bpy.data.objects["Camera"].scale = bpy.data.objects["Camera"].scale * 100
+bpy.data.objects["Empty"].scale = bpy.data.objects["Empty"].scale * 100
+bpy.data.objects["Eye.Wetness"].scale = bpy.data.objects["Eye.Wetness"].scale * 100
+bpy.data.objects["Sunglasses"].scale = bpy.data.objects["Sunglasses"].scale * 100
 
 ##- Set default render machine
 bpy.context.scene.render.engine = 'CYCLES'
