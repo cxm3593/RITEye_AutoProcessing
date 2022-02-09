@@ -5,6 +5,9 @@
 import bpy
 import json
 import math
+import sys
+
+##-##-##-
 
 ##-##-##- Variables:
 head = bpy.data.objects["head"]
@@ -204,22 +207,22 @@ ApplyWeightsToVerts(upper_eyelid_weight_table, upper_vg)
 ApplyWeightsToVerts(lower_eyelid_weight_table, lower_vg)
 
 ##-##-##- Add modifiers
-ShrinkWrap_upper_Eye = head.modifiers.new("ShrinkWrap_upper", 'SHRINKWRAP')
-ShrinkWrap_upper_Eye.wrap_mode = 'OUTSIDE'
-ShrinkWrap_upper_Eye.target = bpy.data.objects["Eye.Wetness"]
-ShrinkWrap_upper_Eye.offset = 0.03
-ShrinkWrap_upper_Eye.vertex_group = "upper_blinker"
-ShrinkWrap_upper_Cornea = head.modifiers.new("ShrinkWrap_upper_Cornea", 'SHRINKWRAP')
-ShrinkWrap_upper_Cornea.wrap_mode = 'OUTSIDE'
-ShrinkWrap_upper_Cornea.target = bpy.data.objects["63"]
-ShrinkWrap_upper_Cornea.offset = 0.03
-ShrinkWrap_upper_Cornea.vertex_group = "upper_blinker"
+# ShrinkWrap_upper_Eye = head.modifiers.new("ShrinkWrap_upper", 'SHRINKWRAP')
+# ShrinkWrap_upper_Eye.wrap_mode = 'OUTSIDE'
+# ShrinkWrap_upper_Eye.target = bpy.data.objects["Eye.Wetness"]
+# ShrinkWrap_upper_Eye.offset = 0.03
+# ShrinkWrap_upper_Eye.vertex_group = "upper_blinker"
+# ShrinkWrap_upper_Cornea = head.modifiers.new("ShrinkWrap_upper_Cornea", 'SHRINKWRAP')
+# ShrinkWrap_upper_Cornea.wrap_mode = 'OUTSIDE'
+# ShrinkWrap_upper_Cornea.target = bpy.data.objects["63"]
+# ShrinkWrap_upper_Cornea.offset = 0.03
+# ShrinkWrap_upper_Cornea.vertex_group = "upper_blinker"
 
-ShrinkWrap_lower_Cornea = head.modifiers.new("ShrinkWrap_upper_Cornea", 'SHRINKWRAP')
-ShrinkWrap_lower_Cornea.wrap_mode = 'OUTSIDE'
-ShrinkWrap_lower_Cornea.target = bpy.data.objects["63"]
-ShrinkWrap_lower_Cornea.offset = 0.03
-ShrinkWrap_lower_Cornea.vertex_group = "lower_blinker"
+# ShrinkWrap_lower_Cornea = head.modifiers.new("ShrinkWrap_upper_Cornea", 'SHRINKWRAP')
+# ShrinkWrap_lower_Cornea.wrap_mode = 'OUTSIDE'
+# ShrinkWrap_lower_Cornea.target = bpy.data.objects["63"]
+# ShrinkWrap_lower_Cornea.offset = 0.03
+# ShrinkWrap_lower_Cornea.vertex_group = "lower_blinker"
 
 ##-##- Fix some bug
 

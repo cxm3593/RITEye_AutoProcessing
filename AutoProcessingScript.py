@@ -1,11 +1,19 @@
 import bpy
 import json
 import math
+import sys
+import time
+
+##-##-##- Argument
+#model_name = str(sys.argv[1])
+
+##-##-##- Init
 
 eye_filepath = "//Eye.blend"
+lashLib_path = "//Eyelash_Lib.blend"
 parameters_json = {}
 
-head_filename = "Model"
+head_filename = model_name # will be passed in as global variable from AutoScript_ExternalLink.py
 
 def initParameters():
     with open("AutoScriptParameters.json") as p_json:
@@ -128,12 +136,18 @@ def fixSkin():
     n_node.image = norm
     
     
-def ImportBlenderFile(filepath):
+def ImportBlenderFile(filepath, objNames=None):
+
     with bpy.data.libraries.load(filepath, link=False) as (data_from, data_to): # link=False : not to modify the original model
         data_to.objects = data_from.objects
         data_to.materials = data_from.materials
 
     for obj in data_to.objects:
+        if objNames!=None:
+            if obj.name not in objNames:
+                continue
+            else:
+                print("Obj import found: ", objNames)
         if obj is not None or bpy.types.BlendDataWorkSpaces:
           bpy.context.collection.objects.link(obj)
         
@@ -145,6 +159,19 @@ def ImportBlenderFile(filepath):
         if newname == "Eye":                # hack fix
             newname = "Eye.Wetness"
         obj.name = newname
+        if objNames != None:
+            if obj.name[1] == 'L':
+                obj.name = 'lower'
+                if obj.name == "lower.001": # strange, have to add it or it will be named to lower.001
+                    obj.name = "lower"
+                print("Lower lash named: ", obj.name)
+            if obj.name[1] == 'U':
+                obj.name = "upper"
+                #print("upper exist: ", (bpy.data.objects["upper"] == None) )
+                if obj.name == "upper.001":
+                    obj.name = "upper"
+                print("Upper lash named: ", obj.name)
+    
           
 def Importeye():
     ImportBlenderFile(eye_filepath)
@@ -167,6 +194,14 @@ def lashesAndPlica():
     blender_path = bpy.path.abspath(blender_path)
     ImportBlenderFile(blender_path)
     parent()
+
+def ImportLashes():
+    uppername = "1" + 'U'
+    lowername = "1" + 'L'
+
+    print("Importing eyelashfile: ", [uppername])
+    ImportBlenderFile(lashLib_path, objNames = [uppername, lowername])
+
     
 def placeLashes():
     # gets the lashes
@@ -218,6 +253,52 @@ def placeLash(lash, head, lidVerts, edges):
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.transform.translate(value=(delta[0], delta[1], delta[2]), orient_type='GLOBAL')
         bpy.ops.object.mode_set(mode='OBJECT')
+
+def SetLashes():
+    lash_parameters_dict = parameters_json["eyelash_parameters"]
+    model_lash_dict = lash_parameters_dict[head_filename]
+
+    thickness = model_lash_dict["thickness"]
+    amount = model_lash_dict["amount"]
+    clump = model_lash_dict["clump"]
+    clump_shape = model_lash_dict["clump_shape"]
+    length = model_lash_dict["length"]
+
+    lower = bpy.data.objects["lower"]
+    upper = bpy.data.objects["upper"]
+    upper_settings = upper.particle_systems["new_lashes"].settings
+    lower_settings = lower.particle_systems["new_lashes"].settings
+
+    # settings
+    # setting amount
+    upper_settings.rendered_child_count = amount[0]
+    lower_settings.rendered_child_count = amount[1]
+    upper_settings.child_nbr = amount[0]
+    lower_settings.child_nbr = amount[1]
+    # setting thickness
+    upper_settings.root_radius = thickness[0]
+    lower_settings.root_radius = thickness[1]
+    # setting clump
+    upper_settings.clump_factor = clump[0]
+    lower_settings.clump_factor = clump[1]
+    upper_settings.clump_shape = clump_shape
+    lower_settings.clump_shape = clump_shape
+    # setting length
+    upper_settings.child_length = length[0]
+    lower_settings.child_length = length[1]
+    # setting random
+    upper.particle_systems["new_lashes"].child_seed = int(head_filename)
+    lower.particle_systems["new_lashes"].child_seed = int(head_filename)
+
+    # static settings:
+    upper_settings.use_clump_noise = True
+    lower_settings.use_clump_noise = True
+    upper_settings.clump_noise_size = 0.5
+    lower_settings.clump_noise_size = 0.5
+
+
+
+
 
 def placePlica():
     disp = parameters_json["plicaDisp"]
@@ -287,6 +368,7 @@ cleanEye()
 fixSkin()
 lashesAndPlica()
 placeLashes()
+SetLashes()
 placePlica()
 AddWarp()
 SettingSceneMisc()

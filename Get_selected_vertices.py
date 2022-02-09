@@ -3,9 +3,14 @@ import bpy
 # Store Eyelid vertices
 print("Debug: vertex weights\n")
 
-head_raw = bpy.data.objects["Head"]
+eyelid_upper = "eyelid_vertices.txt"
+eyelid_lower = "eyelid_vertices_lower.txt"
+eyelid_upper_edge = "eyelidEdge_vertices_upper.txt"
+eyelid_lower_edge = "eyelidEdge_vertices_lower.txt"
 
-with open("eyelidEdge_vertices_lower.txt", "w") as vertice_file:
+head_raw = bpy.data.objects["head"]
+
+with open(eyelid_upper, "w") as vertice_file:
     #selected_verts = [v for v in head_raw.data.vertices if v.select]
     selected_verts = []
     for v in head_raw.data.vertices:
