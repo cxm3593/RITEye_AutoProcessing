@@ -15,7 +15,7 @@ In current stage, there are three script files that are important to the auto pr
 
 ## How to use:
 
-**The simplest way is to modify and run the script: AutoScript_ExternalLInk.py. Add a commandline argument with a number [1,24] to process for a particular headmodel. Or process all head models with no CLA.**
+**The simplest way is to modify and run the script: AutoScriptSolution.py. Add a commandline argument with a number [1,24] to process for a particular headmodel. Or process all head models with no CLA.**
 
 To use the program, run these three files in the given order, or run with the AutoScript_ExternalLink.py in Blender.
 
