@@ -156,8 +156,10 @@ def ApplyWeightsToVerts(eyelid_weight_table, vertex_group):
 print("Running Linear Edge Weight Script...")
 
 parameters_json = initParameters()
-upper_edge_verts = readVertexFile(UpperEyelidEdgeVertFile)
-lower_edge_verts = readVertexFile(LowerEyelidEdgeVertFile)
+#upper_edge_verts = readVertexFile(UpperEyelidEdgeVertFile)
+upper_edge_verts = parameters_json["eyelidEdge_vertices_upper"]
+#lower_edge_verts = readVertexFile(LowerEyelidEdgeVertFile)
+lower_edge_verts = parameters_json["eyelidEdge_vertices_lower"]
 
 upper_edge_verts_Xdict = {}
 lower_edge_verts_Xdict = {}
@@ -173,13 +175,15 @@ sorted_index_lower = GEW_result_lower[1]
 
 
 ##-##- Second calculate weight for each vertex based on the distance to the closest vertex.
-all_upper_verts_index = readVertexFile(UpperEyelidVertFile)
+#all_upper_verts_index = readVertexFile(UpperEyelidVertFile)
+all_upper_verts_index = parameters_json["eyelid_vertices_upper"]
 EdgeMatchTable_upper = {}
 ##- Initialize Match Table
 for v in sorted_index_upper:
 	EdgeMatchTable_upper[v] = []
 
-all_lower_verts_index = readVertexFile(LowerEyelidVertFile)
+#all_lower_verts_index = readVertexFile(LowerEyelidVertFile)
+all_lower_verts_index = parameters_json["eyelid_vertices_lower"]
 EdgeMatchTable_lower = {}
 for v in sorted_index_lower:
 	EdgeMatchTable_lower[v] = []
@@ -192,8 +196,8 @@ EdgeMatchTable_lower = MatchEyelidVertToEdge(EdgeMatchTable_lower, all_lower_ver
 # for tuple in EdgeMatchTable_upper.items():
 # 	print(tuple[0].index, ":", [e.index for e in tuple[1]])
 
-for tuple in EdgeMatchTable_lower.items():
-	print(tuple[0].index, ":", [e.index for e in tuple[1]])
+# for tuple in EdgeMatchTable_lower.items():
+# 	print(tuple[0].index, ":", [e.index for e in tuple[1]])
 
 ##- For each closest list, find the max range and ration of distance to the max for each vertex
 # upper_eyelid_weight_table = {}
@@ -253,6 +257,6 @@ bpy.context.scene.unit_settings.length_unit = 'CENTIMETERS'
 
 
 ## for debug
-for tuple in upper_eyelid_weight_table.items():
-	print(tuple)
+# for tuple in upper_eyelid_weight_table.items():
+# 	print(tuple)
 	

@@ -216,14 +216,14 @@ def placeLashes():
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
     # wraps the lashes around the model
-    upperEdges = parameters_json["upperEdges"]
-    lowerEdges = parameters_json["lowerEdges"]
-    upperLidVerts = parameters_json["upperLidVerts"]
-    lowerLidVerts = parameters_json["lowerLidVerts"]
+    upperEdges_lash = parameters_json["upperEdges_lash"]
+    lowerEdges_lash = parameters_json["lowerEdges_lash"]
+    upperLidVerts_lash = parameters_json["upperLidVerts_lash"]
+    lowerLidVerts_lash = parameters_json["lowerLidVerts_lash"]
     
     # warps the lashes geometry 
-    placeLash(lower, head, lowerLidVerts, lowerEdges)
-    placeLash(upper, head, upperLidVerts, upperEdges)
+    placeLash(lower, head, lowerLidVerts_lash, lowerEdges_lash)
+    placeLash(upper, head, upperLidVerts_lash, upperEdges_lash)
     
 def placeLash(lash, head, lidVerts, edges):
     # positions the lower lash

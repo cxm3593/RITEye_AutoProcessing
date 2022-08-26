@@ -2,6 +2,7 @@
 
 import bpy
 import math
+import json
 
 print("####Running Eyelid_AutoWeight.py...")
 ## Initialize some variables
@@ -10,6 +11,11 @@ head_vgroups = head.vertex_groups
 
 upper_eyelash = bpy.data.objects["upper"]
 lower_eyelash = bpy.data.objects["lower"]
+
+## initalize parameters
+json_file_path = "AutoScriptParameters.json"
+json_file = open(json_file_path)
+parameters = json.load(json_file)
 
 ## Create Armature and set up bones
 new_armature = bpy.ops.object.armature_add(enter_editmode=False, align='WORLD', location=(0, 0, 0))
@@ -61,15 +67,19 @@ eyelid_lower_verts = []
 
 # read upper_eyelid vertices
 print("Reading Vertices...")
-with open("eyelid_vertices.txt", "r") as vertices_file:
-    for v in vertices_file.readlines():
-        vertex_str = v.strip()
-        eyelid_upper_verts.append(int(vertex_str))
+# with open("eyelid_vertices.txt", "r") as vertices_file:
+#     for v in vertices_file.readlines():
+#         vertex_str = v.strip()
+#         eyelid_upper_verts.append(int(vertex_str))
 
-with open("eyelid_vertices_lower.txt", "r") as lower_vertices_file:
-	for v in lower_vertices_file.readlines():
-		vertex_str = v.strip()
-		eyelid_lower_verts.append(int(vertex_str))
+eyelid_upper_verts = parameters["eyelid_vertices_upper"]
+eyelid_lower_verts = parameters["eyelid_vertices_lower"]
+
+
+# with open("eyelid_vertices_lower.txt", "r") as lower_vertices_file:
+# 	for v in lower_vertices_file.readlines():
+# 		vertex_str = v.strip()
+# 		eyelid_lower_verts.append(int(vertex_str))
         
 # apply weight to vertices
 upper_vg = head_vgroups.get("upper_blinker")
@@ -79,7 +89,7 @@ head_vg = head_vgroups.get("head_move")
 
 ### Calculate S
 ## variables
-print("Calculating S...")
+#print("Calculating S...")
 
 BU = upper_blinker.tail
 #print("B_Tail: ",BU[0], ",",BU[1], ",",BU[2])
@@ -131,13 +141,13 @@ def generateVertexWeight(eyelid_verts, eyelid_apex, vertex_group, head, isUpper)
 		Dy = vertex.co[1] - eyelid_apex.co[1]
 		Dz = vertex.co[2] - eyelid_apex.co[2]
 		D = math.sqrt((Dx*Dx) + (Dy*Dy) + (Dz*Dz))
-		print(v_index, ": ",Dx,", ",Dy,", ",Dz)
+		# print(v_index, ": ",Dx,", ",Dy,", ",Dz)
 		D_dict[vertex.index] = D
 
 	minmax = findMinMax(list(D_dict.values()))
 	Min = minmax[0]
 	Max = minmax[1]
-	print("Min: ",Min, ", Max: ", Max)
+	#print("Min: ",Min, ", Max: ", Max)
 	Range = Max - Min
 
 	# Calculate z difference
