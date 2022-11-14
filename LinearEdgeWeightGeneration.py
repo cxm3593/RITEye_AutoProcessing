@@ -6,6 +6,9 @@ import bpy
 import json
 import math
 import sys
+import traceback
+
+from symbol import parameters
 
 ##-##-##-
 
@@ -20,6 +23,8 @@ LowerEyelidVertFile = "eyelid_vertices_lower.txt"
 
 upper_vg = head.vertex_groups.get("upper_blinker")
 lower_vg = head.vertex_groups.get("lower_blinker")
+upper_vg_R = head.vertex_groups.get("upper_blinker_R")
+lower_vg_R = head.vertex_groups.get("lower_blinker_R")
 
 
 
@@ -53,13 +58,18 @@ def findPosInList(vlist: list, target: int) -> int:
 			return pos
 		else:
 			pos += 1
+	print("Cannot find ", str(target), "in ", vlist)
 
 def CalculateDistance(v1, v2) -> float:
-	Dx = v1.co[0] - v2.co[0]
-	Dy = v1.co[1] - v2.co[1]
-	Dz = v1.co[2] - v2.co[2]
-	D = math.sqrt(Dx*Dx + Dy*Dy + Dz*Dz)
-	return D
+	try:
+		Dx = v1.co[0] - v2.co[0]
+		Dy = v1.co[1] - v2.co[1]
+		Dz = v1.co[2] - v2.co[2]
+		D = math.sqrt(Dx*Dx + Dy*Dy + Dz*Dz)
+		return D
+	except:
+		print(e)
+		print(traceback.format_exc())
 
 def GetDeltaX(v1, v2) -> float:
 	Dx = v1.co[0] - v2.co[0]
@@ -87,7 +97,7 @@ def GenerateEdgeWeight(edge_verts, edge_verts_Xdict, apex_name:str):
 
 	first_corner_vert = sorted_index[0]
 	last_corner_vert = sorted_index[-1]
-	eyelid_apex_index = parameters_json[apex_name]
+	eyelid_apex_index = parameters_json["model_vert_info"][str(model_name)][apex_name]
 	eyelid_apex = getVertexByIndex(eyelid_apex_index, head)
 
 	eyelid_apex_ListPos = findPosInList(sorted_index, eyelid_apex_index)
@@ -125,31 +135,87 @@ def MatchEyelidVertToEdge(EdgeMatchTable, all_verts_index, sorted_index):
 	return EdgeMatchTable
 
 def GenerateEyelidWeight(EdgeMatchTable, edge_weight_dict):
-	eyelid_weight_table = {}
+	try:
+		eyelid_weight_table = {}
 
-	for current_edge_vert, closest_list in EdgeMatchTable.items():
-		temp_distance_table = {}
-		Max_distance = CalculateDistance(closest_list[0], current_edge_vert)
-		for current_eyelid_vert in closest_list:
-			current_distance = CalculateDistance(current_eyelid_vert, current_edge_vert)
-			temp_distance_table[current_eyelid_vert] = current_distance
-			if current_distance > Max_distance:
-				Max_distance = current_distance
-		
-		for current_vert, current_distance in temp_distance_table.items():
-			if Max_distance == 0.0:
-				percentage = 0.0
-			else:
-				percentage = current_distance / Max_distance
-			closest_edge_weight = edge_weight_dict[current_edge_vert]
-			current_weight = closest_edge_weight * (1 - percentage * 0.3)
-			eyelid_weight_table[current_vert] = current_weight
+		for current_edge_vert, closest_list in EdgeMatchTable.items():
+			if closest_list == []:
+				continue
+
+			temp_distance_table = {}
+			Max_distance = CalculateDistance(closest_list[0], current_edge_vert)
+			for current_eyelid_vert in closest_list:
+				current_distance = CalculateDistance(current_eyelid_vert, current_edge_vert)
+				temp_distance_table[current_eyelid_vert] = current_distance
+				if current_distance > Max_distance:
+					Max_distance = current_distance
+			
+			for current_vert, current_distance in temp_distance_table.items():
+				if Max_distance == 0.0:
+					percentage = 0.0
+				else:
+					percentage = current_distance / Max_distance
+				closest_edge_weight = edge_weight_dict[current_edge_vert]
+				current_weight = closest_edge_weight * (1 - percentage * 0.3)
+				eyelid_weight_table[current_vert] = current_weight
+	except Exception as e:
+		print("Error while GenerateEyelidWeight")
+		print(e)
+		print(traceback.format_exc())
+		print(closest_list, current_edge_vert)
 
 	return eyelid_weight_table
 
 def ApplyWeightsToVerts(eyelid_weight_table, vertex_group):
 	for tuple in eyelid_weight_table.items():
 		vertex_group.add([tuple[0].index], tuple[1], 'REPLACE')
+
+# Select a patch of vertices with pairs with shortest_path method
+def GetSelectedVertsByPairs(start_vert, end_vert):
+	bpy.ops.object.mode_set(mode='OBJECT')
+	bpy.context.view_layer.objects.active = head
+	hm = head.data
+
+	# Clear all selection
+	for v in hm.vertices:
+		v.select = False
+
+	for e in hm.edges:
+		e.select = False
+
+	for f in hm.polygons:
+		f.select = False
+
+	hm.vertices[start_vert].select = True
+	hm.vertices[end_vert].select = True
+	bpy.ops.object.mode_set(mode='EDIT')
+	bpy.ops.mesh.shortest_path_select(
+		edge_mode='SELECT', 
+		use_face_step=True, 
+		use_topology_distance=False,
+		use_fill= True
+	)
+
+	bpy.ops.object.mode_set(mode='OBJECT')
+	head.update_from_editmode()
+	selected_verts = []
+	for v in hm.vertices:
+		if v.select == True:
+			selected_verts.append((v.index))
+
+	for v in hm.vertices:
+		v.select = False
+
+	for e in hm.edges:
+		e.select = False
+
+	for f in hm.polygons:
+		f.select = False
+
+	print("Debug vert select: ", selected_verts)
+	
+	return selected_verts
+	
 		
 
 ##-##-##- Program Begins Here:
@@ -158,11 +224,23 @@ print("Running Linear Edge Weight Script...")
 parameters_json = initParameters()
 #upper_edge_verts = readVertexFile(UpperEyelidEdgeVertFile)
 upper_edge_verts = parameters_json["eyelidEdge_vertices_upper"]
+# upper_edge_verts_R = parameters_json["eyelidEdgeR_vertices_upper"]
+EyeR_upper_edge = parameters_json["model_vert_info"][str(model_name)]["EyeR_upper_eyelid_pathselect_edge"]
+upper_edge_verts_R = GetSelectedVertsByPairs(
+	EyeR_upper_edge[0], EyeR_upper_edge[1]
+)
 #lower_edge_verts = readVertexFile(LowerEyelidEdgeVertFile)
 lower_edge_verts = parameters_json["eyelidEdge_vertices_lower"]
+#lower_edge_verts_R = parameters_json["eyelidEdgeR_vertices_lower"]
+EyeR_lower_edge = parameters_json["model_vert_info"][str(model_name)]["EyeR_lower_eyelid_pathselect_edge"]
+lower_edge_verts_R = GetSelectedVertsByPairs(
+	EyeR_lower_edge[0], EyeR_lower_edge[1]
+)
 
 upper_edge_verts_Xdict = {}
 lower_edge_verts_Xdict = {}
+upper_edge_verts_R_Xdict = {}
+lower_edge_verts_R_Xdict = {}
 
 ##-##- First, calculate weight for vertices on the edge
 GEW_result_upper = GenerateEdgeWeight(upper_edge_verts, upper_edge_verts_Xdict, apex_name="upper_lid")
@@ -173,24 +251,56 @@ GEW_result_lower = GenerateEdgeWeight(lower_edge_verts, lower_edge_verts_Xdict, 
 lower_edge_weight_dict = GEW_result_lower[0]
 sorted_index_lower = GEW_result_lower[1]
 
+GEW_result_upperR = GenerateEdgeWeight(upper_edge_verts_R, upper_edge_verts_R_Xdict, apex_name="upper_lid_R")
+upper_edge_weight_dict_R = GEW_result_upperR[0]
+sorted_index_upper_R = GEW_result_upperR[1]
+
+GEW_result_lowerR = GenerateEdgeWeight(lower_edge_verts_R, lower_edge_verts_R_Xdict, apex_name="lower_lid_R")
+lower_edge_weight_dict_R = GEW_result_lowerR[0]
+sorted_index_lower_R = GEW_result_lowerR[1]
+
 
 ##-##- Second calculate weight for each vertex based on the distance to the closest vertex.
 #all_upper_verts_index = readVertexFile(UpperEyelidVertFile)
 all_upper_verts_index = parameters_json["eyelid_vertices_upper"]
+#all_upper_verts_index_R = parameters_json["eyelidR_vertices_upper"]
+EyeR_upper_full = parameters_json["model_vert_info"][str(model_name)]["EyeR_upper_eyelid_pathselect_full"]
+all_upper_verts_index_R = GetSelectedVertsByPairs(
+	EyeR_upper_full[0], EyeR_upper_full[1]
+)
+
 EdgeMatchTable_upper = {}
+EdgeMatchTable_upper_R = {}
 ##- Initialize Match Table
 for v in sorted_index_upper:
 	EdgeMatchTable_upper[v] = []
+for v in sorted_index_upper_R:
+	EdgeMatchTable_upper_R[v] = []
 
 #all_lower_verts_index = readVertexFile(LowerEyelidVertFile)
 all_lower_verts_index = parameters_json["eyelid_vertices_lower"]
+#all_lower_verts_index_R = parameters_json["eyelidR_vertices_lower"]
+EyeR_lower_full = parameters_json["model_vert_info"][str(model_name)]["EyeR_lower_eyelid_pathselect_full"]
+all_lower_verts_index_R = GetSelectedVertsByPairs(
+	EyeR_lower_full[0], EyeR_lower_full[1]
+)
+
+
 EdgeMatchTable_lower = {}
+EdgeMatchTable_lower_R = {}
 for v in sorted_index_lower:
 	EdgeMatchTable_lower[v] = []
+for v in sorted_index_lower_R:
+	EdgeMatchTable_lower_R[v] = []
+
+
 
 ##- Put verts on eyelid to the list which matches the closest edge vert
 EdgeMatchTable_upper = MatchEyelidVertToEdge(EdgeMatchTable_upper, all_upper_verts_index, sorted_index_upper)
 EdgeMatchTable_lower = MatchEyelidVertToEdge(EdgeMatchTable_lower, all_lower_verts_index, sorted_index_lower)
+
+EdgeMatchTable_upper_R = MatchEyelidVertToEdge(EdgeMatchTable_upper_R, all_upper_verts_index_R, sorted_index_upper_R)
+EdgeMatchTable_lower_R = MatchEyelidVertToEdge(EdgeMatchTable_lower_R, all_lower_verts_index_R, sorted_index_lower_R)
 
 # For debug
 # for tuple in EdgeMatchTable_upper.items():
@@ -203,12 +313,16 @@ EdgeMatchTable_lower = MatchEyelidVertToEdge(EdgeMatchTable_lower, all_lower_ver
 # upper_eyelid_weight_table = {}
 upper_eyelid_weight_table = GenerateEyelidWeight(EdgeMatchTable_upper, upper_edge_weight_dict)
 lower_eyelid_weight_table = GenerateEyelidWeight(EdgeMatchTable_lower, lower_edge_weight_dict)
+upper_eyelid_weight_table_R = GenerateEyelidWeight(EdgeMatchTable_upper_R, upper_edge_weight_dict_R)
+lower_eyelid_weight_table_R = GenerateEyelidWeight(EdgeMatchTable_lower_R, lower_edge_weight_dict_R)
 
 
 
 ##-##- Apply weights to vertices
 ApplyWeightsToVerts(upper_eyelid_weight_table, upper_vg)
 ApplyWeightsToVerts(lower_eyelid_weight_table, lower_vg)
+ApplyWeightsToVerts(upper_eyelid_weight_table_R, upper_vg_R)
+ApplyWeightsToVerts(lower_eyelid_weight_table_R, lower_vg_R)
 
 ##-##-##- Add modifiers
 # ShrinkWrap_upper_Eye = head.modifiers.new("ShrinkWrap_upper", 'SHRINKWRAP')
@@ -234,8 +348,10 @@ ApplyWeightsToVerts(lower_eyelid_weight_table, lower_vg)
 bpy.data.objects["Armature"].pose.bones["upper_blinker"].rotation_mode = 'XYZ'
 bpy.data.objects["Armature"].pose.bones["lower_blinker"].rotation_mode = 'XYZ'
 
-bpy.data.objects["upper"].modifiers["Armature"].object = bpy.data.objects["Armature"]
-bpy.data.objects["lower"].modifiers["Armature"].object = bpy.data.objects["Armature"]
+bpy.data.objects["upper_L"].modifiers["Armature"].object = bpy.data.objects["Armature"]
+bpy.data.objects["lower_L"].modifiers["Armature"].object = bpy.data.objects["Armature"]
+bpy.data.objects["upper_R"].modifiers["Armature"].object = bpy.data.objects["Armature"]
+bpy.data.objects["lower_R"].modifiers["Armature"].object = bpy.data.objects["Armature"]
 
 ##- Scale Fix
 #bpy.ops.object.select_all(action='SELECT')

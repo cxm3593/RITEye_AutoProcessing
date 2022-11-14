@@ -14,8 +14,8 @@ import os
 MODEL_INDEX = 1
 
 
-upper_l = bpy.data.objects["upper"]
-lower_l = bpy.data.objects["lower"]
+upper_l = bpy.data.objects["upper_L"]
+lower_l = bpy.data.objects["lower_L"]
 upper_r = None
 lower_r = None
 
@@ -48,8 +48,8 @@ def RightEyelashCreation():
 	upper_l.name = 'upper_L'
 	lower_l.name = 'lower_L'
 
-	upper_r.name = 'upper_r'
-	lower_r.name = 'lower_r'
+	upper_r.name = 'upper_R'
+	lower_r.name = 'lower_R'
 
 	pupillary_distance = HeadInfo[str(MODEL_INDEX)]["pupillary distance"]
 	upper_r.location[0] = -pupillary_distance * 0.01
@@ -61,4 +61,4 @@ def RightEyelashCreation():
 
 ### Main ###
 ReadHeadModelInfoJson()
-RightEyelashCreation()
+# RightEyelashCreation()

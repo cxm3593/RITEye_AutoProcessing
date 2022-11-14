@@ -2,14 +2,14 @@ import bpy
 
 head = bpy.data.objects["head"]
 
-eyelid_upper = "eyelid_vertices.txt"
-eyelid_lower = "eyelid_vertices_lower.txt"
-eyelid_upper_edge = "eyelidEdge_vertices_upper.txt"
-eyelid_lower_edge = "eyelidEdge_vertices_lower.txt"
+eyelidR_upper = "eyelidR_vertices_upper.txt"
+eyelidR_lower = "eyelidR_vertices_lower.txt"
+eyelidR_upper_edge = "eyelidEdgeR_vertices_upper.txt"
+eyelidR_lower_edge = "eyelidEdgeR_vertices_lower.txt"
 
 
 vertices_list = []
-with open(eyelid_lower, "r") as vertices_file:
+with open(eyelidR_upper_edge, "r") as vertices_file:
     for v in vertices_file.readlines():
         vertex_str = v.strip()
         if(int(vertex_str) != None):

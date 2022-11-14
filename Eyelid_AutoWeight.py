@@ -9,13 +9,19 @@ print("####Running Eyelid_AutoWeight.py...")
 head = bpy.data.objects["head"]
 head_vgroups = head.vertex_groups
 
-upper_eyelash = bpy.data.objects["upper"]
-lower_eyelash = bpy.data.objects["lower"]
+upper_eyelash = bpy.data.objects["upper_L"]
+lower_eyelash = bpy.data.objects["lower_L"]
+upper_eyelash_R = bpy.data.objects["upper_R"]
+lower_eyelash_R = bpy.data.objects["lower_R"]
 
 ## initalize parameters
 json_file_path = "AutoScriptParameters.json"
 json_file = open(json_file_path)
 parameters = json.load(json_file)
+
+headInfo_file_path = "Head Models/HeadModelInfo.json"
+headInfo_file = open(headInfo_file_path)
+headInfo = json.load(headInfo_file)
 
 ## Create Armature and set up bones
 new_armature = bpy.ops.object.armature_add(enter_editmode=False, align='WORLD', location=(0, 0, 0))
@@ -41,6 +47,18 @@ lower_blinker.tail = (0.0, -1.21273, -0.68972)
 lower_blinker.parent = head_move
 lower_blinker.roll = 3.14334
 
+# Right eye
+inter_pd = float(headInfo["1"]["pupillary distance"])
+upper_blinker_R = edit_bones.new("upper_blinker_R")
+upper_blinker_R.head = (-inter_pd, 0, 0)
+upper_blinker_R.tail = (-inter_pd, -1.33367, 0.45673)
+upper_blinker_R.parent = head_move
+
+lower_blinker_R = edit_bones.new('lower_blinker_R')
+lower_blinker_R.head = (-inter_pd, 0.0, 0.0)
+lower_blinker_R.tail = (-inter_pd, -1.21273, -0.68972)
+lower_blinker_R.parent = head_move
+
 ## Scale it down (to fit the general scene)
 Armature_obj.scale = (0.01, 0.01, 0.01)
 
@@ -50,19 +68,29 @@ bpy.ops.object.select_all(action='DESELECT') #deselect all objects
 head.select_set(state = True)
 upper_eyelash.select_set(state = True)
 lower_eyelash.select_set(state = True)
+upper_eyelash_R.select_set(state = True)
+lower_eyelash_R.select_set(state = True)
 Armature_obj.select_set(state = True)
 bpy.context.view_layer.objects.active = Armature_obj
 bpy.ops.object.parent_set(type='ARMATURE', keep_transform=True)
 
+## Set Eyelash to have corresponding vertex groups
+upper_eyelash_R.vertex_groups.new(name = "upper_blinker_R")
+lower_eyelash_R.vertex_groups.new(name = "lower_blinker_R")
+
 ## Creating vertex groups for the head model
 head.vertex_groups.new(name = "upper_blinker")
 head.vertex_groups.new(name = "lower_blinker")
+head.vertex_groups.new(name = "upper_blinker_R")
+head.vertex_groups.new(name = "lower_blinker_R")
 head.vertex_groups.new(name = "head_move")
 
 
 ## Calculate vertex weight
 eyelid_upper_verts = []
 eyelid_lower_verts = []
+eyelidR_upper_verts = []
+eyelidR_lower_verts = []
 
 
 # read upper_eyelid vertices
@@ -74,6 +102,8 @@ print("Reading Vertices...")
 
 eyelid_upper_verts = parameters["eyelid_vertices_upper"]
 eyelid_lower_verts = parameters["eyelid_vertices_lower"]
+eyelidR_upper_verts = parameters["eyelidR_vertices_upper"]
+eyelidR_lower_verts = parameters["eyelidR_vertices_lower"]
 
 
 # with open("eyelid_vertices_lower.txt", "r") as lower_vertices_file:
@@ -84,6 +114,8 @@ eyelid_lower_verts = parameters["eyelid_vertices_lower"]
 # apply weight to vertices
 upper_vg = head_vgroups.get("upper_blinker")
 lower_vg = head_vgroups.get("lower_blinker")
+upper_vg_R = head_vgroups.get("upper_blinker_R")
+lower_vg_R = head_vgroups.get("lower_blinker_R")
 head_vg = head_vgroups.get("head_move")
 
 
@@ -191,7 +223,7 @@ Eyelid_lower_apex_vertex = getVertexByIndex(Eyelid_lower_apex_index, head)
 D_dict = {}
 
 ## Generating for upper eyelid
-generateVertexWeight(eyelid_upper_verts, Eyelid_upper_apex_vertex, upper_vg, head, True)
+# generateVertexWeight(eyelid_upper_verts, Eyelid_upper_apex_vertex, upper_vg, head, True)
 
 
 ## Code block, works fine but not reusable
@@ -233,7 +265,7 @@ generateVertexWeight(eyelid_upper_verts, Eyelid_upper_apex_vertex, upper_vg, hea
 #     upper_vg.add([p[0]], weight, 'REPLACE')
 
 ## Generating for lower eyelid
-generateVertexWeight(eyelid_lower_verts, Eyelid_lower_apex_vertex, lower_vg, head, False)
+# generateVertexWeight(eyelid_lower_verts, Eyelid_lower_apex_vertex, lower_vg, head, False)
 
 
 ### Add modifiers
@@ -249,10 +281,22 @@ Armature_mod_lower = head.modifiers.new("Armature_lower", 'ARMATURE')
 Armature_mod_lower.object = Armature_obj
 Armature_mod_lower.vertex_group = "lower_blinker"
 
+Armature_mod_upper_R = head.modifiers.new("Armature_upper_R", 'ARMATURE')
+Armature_mod_upper_R.object = Armature_obj
+Armature_mod_upper_R.vertex_group = "upper_blinker_R"
+
+Armature_mod_lower_L = head.modifiers.new("Armature_lower_R", 'ARMATURE')
+Armature_mod_lower_L.object = Armature_obj
+Armature_mod_lower_L.vertex_group = "lower_blinker_R"
+
 ## modifier adjustment for eyelash
 bpy.context.view_layer.objects.active = upper_eyelash
 bpy.ops.object.modifier_move_to_index(modifier="Armature", index=2)
 
+upper_eyelash.modifiers["Armature"].vertex_group = "upper_blinker"
+upper_eyelash_R.modifiers["Armature"].vertex_group = "upper_blinker_R"
+lower_eyelash.modifiers["Armature"].vertex_group = "lower_blinker"
+lower_eyelash_R.modifiers["Armature"].vertex_group = "lower_blinker_R"
 
 
 ## For Optional Debug Purpose

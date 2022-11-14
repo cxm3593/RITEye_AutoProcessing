@@ -3,6 +3,7 @@ import json
 import math
 import sys
 import time
+import os
 
 ##-##-##- Argument
 #model_name = str(sys.argv[1])
@@ -14,6 +15,16 @@ lashLib_path = "//Eyelash_Lib.blend"
 parameters_json = {}
 
 head_filename = model_name # will be passed in as global variable from AutoScript_ExternalLink.py
+RITEyes_path = "E:/RITEyes/RITeyes_pipeline"
+HeadInfoJsonPath = os.path.join(RITEyes_path, "static_model", "HeadModelInfo.json")
+
+HeadInfo = None
+
+def ReadHeadModelInfoJson():
+    global HeadInfo
+    with open(HeadInfoJsonPath) as head_info_file:
+        json_str = head_info_file.read()
+        HeadInfo = json.loads(json_str)
 
 def initParameters():
     with open("AutoScriptParameters.json") as p_json:
@@ -97,6 +108,18 @@ def cleanEye():
     bpy.ops.object.mode_set(mode='EDIT')
     bpy.ops.mesh.delete(type='VERT')
     
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+    ## Clean right eye
+    eyeSocketList_R = parameters_json["eyeSocket_R"]
+    head_vertices = head.data.vertices
+    for v in head_vertices:
+        for sv in eyeSocketList_R:
+            if v.index == sv:
+                v.select = True
+
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.delete(type='VERT')
     bpy.ops.object.mode_set(mode='OBJECT')
     
 def fixSkin():
@@ -342,16 +365,48 @@ def AddWarp():
         WARP_mod.falloff_type = "CURVE"
 
 def SettingSceneMisc():
-	bpy.context.scene.render.resolution_x = 640
-	bpy.context.scene.render.resolution_y = 480
-	bpy.context.scene.camera = bpy.data.objects["Camera"]
+    bpy.context.scene.render.resolution_x = 640
+    bpy.context.scene.render.resolution_y = 480
+    bpy.context.scene.camera = bpy.data.objects["Camera"]
 
 def SettingDOF():
-	camera = bpy.data.objects["Camera"]
-	camera.data.dof.use_dof = True
-	camera.data.dof.focus_object = bpy.data.objects["Eye.Wetness"]
-	camera.data.dof.aperture_fstop = 0.5
-	camera.data.dof.aperture_blades = 8
+    camera = bpy.data.objects["Camera"]
+    camera.data.dof.use_dof = True
+    camera.data.dof.focus_object = bpy.data.objects["Eye.Wetness"]
+    camera.data.dof.aperture_fstop = 0.5
+    camera.data.dof.aperture_blades = 8
+
+def RightEyelashCreation():
+    '''
+    Copy left eyelash to the right side of the head model
+    '''
+    upper_l = bpy.data.objects["upper"]
+    lower_l = bpy.data.objects["lower"]
+    upper_r = None
+    lower_r = None
+    
+    # first copy left_upper and left_lower eyelashes
+    upper_r = upper_l.copy()
+    bpy.context.collection.objects.link(upper_r)
+    upper_r.data = upper_l.data.copy()
+    upper_r.vertex_groups["upper_blinker"].name = "upper_blinker_R"
+
+    lower_r = lower_l.copy()
+    bpy.context.collection.objects.link(lower_r)
+    lower_r.data = lower_r.data.copy()
+    lower_r.vertex_groups["lower_blinker"].name = "lower_blinker_R"
+
+    upper_l.name = 'upper_L'
+    lower_l.name = 'lower_L'
+
+    upper_r.name = 'upper_R'
+    lower_r.name = 'lower_R'
+
+    pupillary_distance = HeadInfo[str(model_name)]["pupillary distance"]
+    upper_r.location[0] = -pupillary_distance * 0.01
+    upper_r.scale[0] = upper_r.scale[0] * -1
+    lower_r.location[0] = -pupillary_distance * 0.01
+    lower_r.scale[0] = lower_r.scale[0] * -1
 
 
 
@@ -359,6 +414,7 @@ def SettingDOF():
 
 # Init
 parameters_json = initParameters()
+ReadHeadModelInfoJson()
 
 # Entry
 ImportHeadModel()
@@ -373,4 +429,5 @@ placePlica()
 AddWarp()
 SettingSceneMisc()
 SettingDOF()
+RightEyelashCreation()
 
